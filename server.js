@@ -7,7 +7,7 @@ app.use(bodyParser.json());
 
 let whitelist = ['https://email.danielalins.com', 'https://portifolio.danielalins.com'];
 
-const cors = require('cors');
+let cors = require('cors');
 
 let corsOptionsDelegate = function (req, callback) {
   let corsOptions;
@@ -50,7 +50,7 @@ app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
 });
 
 function sendEmail(msg) {
-  const sgMail = require("@sendgrid/mail");
+  let sgMail = require("@sendgrid/mail");
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
   return new Promise((resolve, reject) => {
