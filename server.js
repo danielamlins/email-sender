@@ -46,7 +46,7 @@ app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
 
   let emailSent = await sendEmail(msg);
   let confirmationSent = await sendEmail(msgConfirmation);
-  res.send([emailSent, confirmationSent]);
+  res.send([emailSent, confirmationSent]).then((data)=>console.log(`Sent: ${data}`)).catch(err => console.log(err));
 });
 
 function sendEmail(msg) {
