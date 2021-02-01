@@ -20,7 +20,7 @@ let corsOptionsDelegate = function (req, callback) {
 }
 app.options('/email', cors(corsOptionsDelegate));
 
-app.post("/email", cors(corsOptionsDelegate), function (req, res) {
+app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
   body = req.body;
   email = body.email;
   subject = body.subject;
@@ -44,25 +44,24 @@ app.post("/email", cors(corsOptionsDelegate), function (req, res) {
       "Thank you for the contact. We have received your message and will answer as soon as possible.",
   };
 
-  let emailSent = sendEmail(msg);
-  let confirmationSent = sendEmail(msgConfirmation);
+  let emailSent = await sendEmail(msg);
+  let confirmationSent = await sendEmail(msgConfirmation);
   res.send([emailSent, confirmationSent]);
 });
 
 function sendEmail(msg) {
   const sgMail = require("@sendgrid/mail");
-  const errorMessage = "";
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-  sgMail
-    .send(msg)
-    .then(() => {
-      console.log("Confirmation email sent");
-    })
-    .catch((error) => {
-      errorMessage = error;
-    });
-  return errorMessage;
+  return new Promise((resolve, reject) => {
+    sgMail.send(msg).then(() => {
+      resolve('success');
+      console.log('email sent');
+    }).catch((error) => {
+      console.log(error);
+      reject(error);
+    });    
+  });
 }
 
 // Initiate server
