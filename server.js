@@ -18,7 +18,7 @@ let corsOptionsDelegate = function (req, callback) {
   }
   callback(null, corsOptions) // callback expects two parameters: error and options
 }
-// app.options('/email', cors());
+app.options('/email', cors(corsOptionsDelegate));
 
 app.post("/email", cors(corsOptionsDelegate), function (req, res) {
   body = req.body;
