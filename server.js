@@ -36,7 +36,7 @@ app.post("/email", async function (req, res) {
   subject = body.subject;
   message = body.message;
 
-  const msg = {
+  let msg = {
     to: "danielamlins@gmail.com", // Change to your recipient
     from: "contact@danielalins.com", // Change to your verified sender
     subject: subject,
@@ -44,7 +44,7 @@ app.post("/email", async function (req, res) {
     html: `${message} from ${email}`,
   };
 
-  const msgConfirmation = {
+  let msgConfirmation = {
     to: email, // Change to your recipient
     from: "contact@danielalins.com", // Change to your verified sender
     subject: "Thank you for the message",
