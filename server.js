@@ -7,7 +7,12 @@ app.use(bodyParser.json());
 
 let whitelist = ['https://email.danielalins.com', 'https://portifolio.danielalins.com'];
 
-let cors = require('cors');
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "https://portifolio.danielalins.com");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+// let cors = require('cors');
 
 // let corsOptionsDelegate = function (req, callback) {
 //   let corsOptions;
@@ -24,7 +29,8 @@ const corsOptionsDelegate = {"origin": "*",
 "optionsSuccessStatus": 204 }
 // app.options('/email', cors(corsOptionsDelegate));
 
-app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
+// app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
+app.post("/email", async function (req, res) {
   body = req.body;
   email = body.email;
   subject = body.subject;
@@ -50,7 +56,7 @@ app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
 
   let emailSent = await sendEmail(msg);
   let confirmationSent = await sendEmail(msgConfirmation);
-  res.send([emailSent, confirmationSent]).then((data)=>console.log(`Sent: ${data}`)).catch(err => console.log(err));
+  res.send([emailSent, confirmationSent]);
 });
 
 function sendEmail(msg) {
