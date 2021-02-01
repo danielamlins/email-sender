@@ -7,6 +7,8 @@ app.use(bodyParser.json());
 
 let whitelist = ['https://email.danielalins.com', 'https://portifolio.danielalins.com'];
 
+const cors = require('cors');
+
 let corsOptionsDelegate = function (req, callback) {
   let corsOptions;
   if (whitelist.indexOf(req.header('Origin')) !== -1) {
