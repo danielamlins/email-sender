@@ -31,7 +31,7 @@ const corsOptionsDelegate = {"origin": "*",
 
 // app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
 app.post("/email", async function (req, res) {
-  body = req.body;
+  try {body = req.body;
   email = body.email;
   subject = body.subject;
   message = body.message;
@@ -57,6 +57,9 @@ app.post("/email", async function (req, res) {
   let emailSent = await sendEmail(msg);
   let confirmationSent = await sendEmail(msgConfirmation);
   res.send([emailSent, confirmationSent]);
+} catch (e) {
+  console.log(e);
+}
 });
 
 function sendEmail(msg) {
