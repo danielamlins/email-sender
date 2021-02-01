@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+
+  email_send:
+    container_name: email_send
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    environment: 
+      - PORT=8000
+

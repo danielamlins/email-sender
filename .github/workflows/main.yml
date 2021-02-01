@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - '*'
+#  pull_request:
+#   branches: [ main ]
+
+jobs:
+
+  build:
+    name: Build
+    container: 
+      image: node:12.20.0-alpine
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code into directory
+      uses: actions/checkout@v2
+
+    - name: path know
+      run: |
+        ls
+        pwd
+
+    - name: path set
+      run: |
+        export PATH=PATH:/__w/email-sender/email-sender/node_modules/.bin
+
+    - name: Clean cache
+      run: |
+        npm cache clean --force
+        rm -rf node_modules package-lock.json yarn.lock
+
+    - name: Get dependencies
+      run: |
+        npm install
+
+#    - name: Build bundle
+#      run: |
+#        npm run build
+
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Prepare
+      id: prep
+      run: |
+        echo "export SENDGRID_API_KEY='${{ secrets.SENDGRID_API_KEY }}'" > sendgrid.env
+        IS_LATEST=false
+        DOCKER_IMAGE=eu.gcr.io/zeta-bebop-186920/email_send
+        VERSION=edge
+        
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+          IS_LATEST=true
+        elif [[ $GITHUB_REF == refs/heads/* ]]; then
+          VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
+          if [[ $GITHUB_REF == refs/heads/master ]]; then
+            IS_LATEST=true
+          fi
+        elif [[ $GITHUB_REF == refs/pull/* ]]; then
+          VERSION=pr-${{ github.event.number }}
+        fi
+        TAGS="${DOCKER_IMAGE}:${VERSION}"
+        if [ "$IS_LATEST" = true ] ; then
+          TAGS="$TAGS,${DOCKER_IMAGE}:latest"
+        fi
+        if [ "${{ github.event_name }}" = "push" ]; then
+          TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
+        fi
+        PUSH_IMAGE=true
+        REPO_FULL_NAME="${{ github.event.pull_request.head.repo.full_name }}"
+        # If this is both a pull request and a fork, then don't push the image
+        if [[ ${{ github.event_name }} == pull_request ]]; then
+          if [[ $REPO_FULL_NAME != ${{ github.repository }} ]]; then
+            PUSH_IMAGE=false
+          fi
+        fi
+        echo ::set-output name=version::${VERSION}
+        echo ::set-output name=tags::${TAGS}
+        echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+        echo ::set-output name=push_image::$PUSH_IMAGE
+    - name: Check out the repo
+      uses: actions/checkout@v2
+      
+    - name: Set up QEMU
+      id: qemu
+      uses: docker/setup-qemu-action@v1
+      with:
+        platforms: all
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to gcr
+      id: docker-login
+      uses: docker/login-action@v1
+      with:
+        registry: eu.gcr.io
+        username: _json_key
+        password: ${{ secrets.GCR_JSON_KEY }}
+
+    - name: Build and push
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./Dockerfile
+        builder: ${{ steps.buildx.outputs.name }}
+        platforms: linux/amd64
+        tags: ${{ steps.prep.outputs.tags }}
+        push: ${{ steps.prep.outputs.push_image }}
+        labels: |
+          org.opencontainers.image.source=${{ github.event.repository.clone_url }}
+          org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          
+    - name: Image digest
+      run: echo ${{ steps.docker_build.outputs.digest }}
+
+
+  cloud-run:
+    name: Cloud Run
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+#    - name: Prepare
+#      id: prep
+#      run: |
+#        ls
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: zeta-bebop-186920
+        service_account_key: ${{ secrets.GCR_JSON_KEY }}
+        export_default_credentials: true
+
+    - name: Deploy Docker image
+      run: gcloud run deploy emailsend --service-account=cloud-run-adm@zeta-bebop-186920.iam.gserviceaccount.com --project zeta-bebop-186920 --image eu.gcr.io/zeta-bebop-186920/email_send --region europe-west1 --platform managed
