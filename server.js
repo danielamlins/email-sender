@@ -22,7 +22,7 @@ const corsOptionsDelegate = {"origin": "*",
 "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
 "preflightContinue": false,
 "optionsSuccessStatus": 204 }
-app.options('/email', cors(corsOptionsDelegate));
+// app.options('/email', cors(corsOptionsDelegate));
 
 app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
   body = req.body;
