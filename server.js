@@ -5,13 +5,20 @@ app.use(bodyParser.urlencoded());
 
 app.use(bodyParser.json());
 
-app.use(function(req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", "https://portifolio.danielalins.com");
-  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
+let whitelist = ['https://email.danielalins.com', 'https://portifolio.danielalins.com'];
 
-app.post("/email", function (req, res) {
+let corsOptionsDelegate = function (req, callback) {
+  let corsOptions;
+  if (whitelist.indexOf(req.header('Origin')) !== -1) {
+    corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
+  } else {
+    corsOptions = { origin: false } // disable CORS for this request
+  }
+  callback(null, corsOptions) // callback expects two parameters: error and options
+}
+// app.options('/email', cors());
+
+app.post("/email", cors(corsOptionsDelegate), function (req, res) {
   body = req.body;
   email = body.email;
   subject = body.subject;
