@@ -1,17 +1,18 @@
 let express = require("express");
-let app = express();
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded());
+const app = express();
+const cors = require('cors');
 
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-let whitelist = ['https://email.danielalins.com', 'https://portifolio.danielalins.com'];
 
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "https://portifolio.danielalins.com");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
+
+// app.use(function(req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "https://portifolio.danielalins.com");
+//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//   next();
+// });
 // let cors = require('cors');
 
 // let corsOptionsDelegate = function (req, callback) {
@@ -23,15 +24,26 @@ app.use(function(req, res, next) {
 //   }
 //   callback(null, corsOptions) // callback expects two parameters: error and options
 // }
-const corsOptionsDelegate = {"origin": "*",
-"methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-"preflightContinue": false,
-"optionsSuccessStatus": 204 }
+// const corsOptionsDelegate = {"origin": "*",
+// "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+// "preflightContinue": false,
+// "optionsSuccessStatus": 204 }
 // app.options('/email', cors(corsOptionsDelegate));
 
 // app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
-app.post("/email", async function (req, res) {
-  try {body = req.body;
+
+
+let whitelist = ['/\.danielalins\.com$/'];
+let corsOptions = {
+    "origin": whitelist,
+    "methods": "POST",
+    "allowedHeaders": ["Content-Type", "Authorization", "*"],
+    "optionsSuccessStatus": "200" // For legacy browser support
+}
+app.use(cors(corsOptions));
+
+app.post("/email", cors(corsOptions), async function (req, res) {
+  body = req.body;
   email = body.email;
   subject = body.subject;
   message = body.message;
@@ -57,9 +69,6 @@ app.post("/email", async function (req, res) {
   let emailSent = await sendEmail(msg);
   let confirmationSent = await sendEmail(msgConfirmation);
   res.send([emailSent, confirmationSent]);
-} catch (e) {
-  console.log(e);
-}
 });
 
 function sendEmail(msg) {
