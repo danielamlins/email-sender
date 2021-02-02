@@ -1,24 +1,21 @@
 let express = require("express");
 const app = express();
-const cors = require('cors');
+const cors = require("cors");
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use((req, res, next) => {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers",
-    "Origin, X-Requeted-With, Content-Type, Accept, Authorization, RBR");
-  if (req.headers.origin) {
-    res.header('Access-Control-Allow-Origin', req.headers.origin);
-  }
-  if (req.method === 'OPTIONS') {
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
-    return res.status(200).json({});
-  }
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "OPTIONS,POST");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, access-control-allow-origin"
+  );
   next();
- });  
+});
 
 // let corsOptionsDelegate = function (req, callback) {
 //   let corsOptions;
@@ -37,15 +34,20 @@ app.use((req, res, next) => {
 
 // app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
 
-
-let whitelist = ['/\.danielalins\.com$/'];
+let whitelist = ["/.danielalins.com$/"];
 let corsOptions = {
-    "origin": whitelist,
-    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-    "allowedHeaders": ["Content-Type", "Authorization", "access-control-allow-origin"],
-    "optionsSuccessStatus": "200" // For legacy browser support
-}
+  origin: whitelist,
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "access-control-allow-origin",
+  ],
+  optionsSuccessStatus: "200", // For legacy browser support
+};
 app.use(cors(corsOptions));
+
+app.options("*", cors(corsOptions));
 
 app.post("/email", cors(), async function (req, res) {
   body = req.body;
@@ -81,20 +83,23 @@ function sendEmail(msg) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
   return new Promise((resolve, reject) => {
-    sgMail.send(msg).then(() => {
-      resolve('success');
-      console.log('email sent');
-    }).catch((error) => {
-      console.log(error);
-      reject(error);
-    });    
+    sgMail
+      .send(msg)
+      .then(() => {
+        resolve("success");
+        console.log("email sent");
+      })
+      .catch((error) => {
+        console.log(error);
+        reject(error);
+      });
   });
 }
 
 // Initiate server
 let port = 8000;
 if (process.env.PORT) {
-    port = process.env.PORT;
+  port = process.env.PORT;
 }
 
 let server = app.listen(port, function () {
