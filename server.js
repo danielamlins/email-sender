@@ -34,7 +34,7 @@ app.use(function (req, res, next) {
 
 // app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
 
-let whitelist = ["/.danielalins.com$/"];
+let whitelist = ['https://email.danielalins.com', 'https://portifolio.danielalins.com/'];
 let corsOptions = {
   origin: whitelist,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
