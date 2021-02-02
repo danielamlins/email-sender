@@ -37,7 +37,7 @@ app.use(function(req, res, next) {
 let whitelist = ['/\.danielalins\.com$/'];
 let corsOptions = {
     "origin": whitelist,
-    "methods": "POST",
+    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
     "allowedHeaders": ["Content-Type", "Authorization", "access-control-allow-origin"],
     "optionsSuccessStatus": "200" // For legacy browser support
 }
