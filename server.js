@@ -8,12 +8,12 @@ app.use(bodyParser.json());
 
 
 
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "https://portifolio.danielalins.com");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   next();
-// });
-// let cors = require('cors');
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "https://portifolio.danielalins.com");
+  res.header("Access-Control-Allow-Origin", "https://email.danielalins.com");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 // let corsOptionsDelegate = function (req, callback) {
 //   let corsOptions;
