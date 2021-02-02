@@ -34,16 +34,16 @@ app.use(function(req, res, next) {
 // app.post("/email", cors(corsOptionsDelegate), async function (req, res) {
 
 
-let whitelist = ['/\.danielalins\.com$/'];
-let corsOptions = {
-    "origin": whitelist,
-    "methods": "POST",
-    "allowedHeaders": ["Content-Type", "Authorization", "*"],
-    "optionsSuccessStatus": "200" // For legacy browser support
-}
-app.use(cors(corsOptions));
+// let whitelist = ['/\.danielalins\.com$/'];
+// let corsOptions = {
+//     "origin": whitelist,
+//     "methods": "POST",
+//     "allowedHeaders": ["Content-Type", "Authorization", "*"],
+//     "optionsSuccessStatus": "200" // For legacy browser support
+// }
+// app.use(cors(corsOptions));
 
-app.post("/email", cors(corsOptions), async function (req, res) {
+app.post("/email", cors(), async function (req, res) {
   body = req.body;
   email = body.email;
   subject = body.subject;
